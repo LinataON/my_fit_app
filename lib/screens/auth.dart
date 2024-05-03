@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:my_fit_app/domain/user.dart';
+import 'package:my_fit_app/services/auth.dart';
 
 class AuthorizationPage extends StatefulWidget {
   const AuthorizationPage({super.key});
@@ -15,6 +18,8 @@ class _AuthorizationPageState extends State<AuthorizationPage> {
   late String _email;
   late String _password;
   bool showlogin = true;
+
+  AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -132,13 +137,56 @@ class _AuthorizationPageState extends State<AuthorizationPage> {
       );
     }
 
-    void _buttonAction(){
+    void _loginButtonAction() async{
       _email = _emailController.text;
       _password = _passwordController.text;
 
-      _emailController.clear();
-      _passwordController.clear();
+      if(_email.isEmpty || _password.isEmpty) return;
 
+      MyAppUser? user =  await _authService.signInWithEmailAndPassword(_email.trim(), _password.trim());
+      if (user == null)
+        {
+          Fluttertoast.showToast(
+              msg: "Not able to sign in! Please check your email/password",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0
+          );
+
+
+        }else {
+          _emailController.clear();
+          _passwordController.clear();
+        }
+    }
+
+    void _registerButtonAction() async{
+      _email = _emailController.text;
+      _password = _passwordController.text;
+
+      if(_email.isEmpty || _password.isEmpty) return;
+
+      MyAppUser? user =  await _authService.registerWithEmailAndPassword(_email.trim(), _password.trim());
+      if (user == null)
+      {
+        Fluttertoast.showToast(
+            msg: "Not able to register you! Please check your email/password",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
+
+
+      }else {
+        _emailController.clear();
+        _passwordController.clear();
+      }
     }
 
     Widget _bottomWave() {
@@ -167,7 +215,7 @@ class _AuthorizationPageState extends State<AuthorizationPage> {
           showlogin
              ? Column(
               children: <Widget>[
-                _form('LOGIN', _buttonAction),
+                _form('LOGIN', _loginButtonAction),
                 Padding(
                     padding: EdgeInsets.all(10),
                     child: GestureDetector(
@@ -184,7 +232,7 @@ class _AuthorizationPageState extends State<AuthorizationPage> {
           )
           : Column(
             children: <Widget>[
-              _form('REGISTER', _buttonAction),
+              _form('REGISTER', _registerButtonAction),
               Padding(
                 padding: EdgeInsets.all(10),
                 child: GestureDetector(
